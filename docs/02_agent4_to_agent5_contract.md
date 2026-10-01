@@ -1,10 +1,19 @@
-# Agent 4 → Agent 5 Contract (`agent2-agent4-to-agent5-v1`)
+# Agent 4 → Agent 5 Contract
 
 This is the smallest stable input shape Agent 5 Version 1 requires, expressed as a plain,
 JSON-serializable dict with two top-level keys: `agent2_model` and `agent4_report`.
 `app.agent5.handoff.parse_agent5_handoff` parses and validates it into the frozen
 `Agent5Handoff` dataclass family in `app.agent5.handoff`. Agent 5 never imports Agent 2's,
 Agent 3's, or Agent 4's Python package.
+
+**Five-Agent Workflow V1 Hardening increment:** `agent2_model.contract_version` was previously
+expected to be `"agent2-agent4-to-agent5-v1"` — a name this repository invented independently of
+Agent 3's `"agent2-to-agent3-v1"` and Agent 4's `"agent2-agent3-to-agent4-v1"`, even though all
+three described the identical real artifact shape. It is now `"agent2-downstream-v1"`
+(`AGENT5_HANDOFF_CONTRACT_VERSION`), the one canonical name Agent 2's own
+`AGENT2_DOWNSTREAM_CONTRACT_VERSION` emits and Agents 3, 4, and 5 all consume unchanged. The
+`agent2_model` shape itself is unchanged by this rename; `agent4_report`'s own shape and the
+overall two-key wrapping are also unchanged.
 
 ## `agent2_model`
 
@@ -64,11 +73,12 @@ Each `identifiability_findings[]` entry: `finding_id`, `category` (e.g. `"LOW_SE
 
 ## How the real `sce00061` fixture for this repository was built
 
-`tests/fixtures/sce00061_agent5_handoff.json` was assembled, in this session, by:
+`tests/fixtures/sce00061_agent5_handoff.json` was assembled by:
 
-1. Reusing the sibling Agent 4 repository's own real `agent2_model` section verbatim (already
-   validated: 53 species, 38 reactions, 109 parameters, with `lower_bound`/`upper_bound`/`fixed`/
-   `initialization_source` all confirmed `null` for every entry).
+1. Reusing the sibling Agent 4 repository's own real `agent2_model` section verbatim — itself
+   produced by Agent 2's own canonical `run_agent2_pipeline` entrypoint (Five-Agent Workflow V1
+   Hardening increment): 53 species, 38 reactions, 115 parameters, with `lower_bound`/
+   `upper_bound`/`fixed`/`initialization_source` all confirmed `null` for every entry.
 2. Actually running Agent 4's own committed pipeline (`run_agent4_pipeline`) against that model
    with one nominally-eligible heuristic parameter as a target and **zero real observations**
    supplied — because no real yeast observation data exists for this model. Agent 4 itself

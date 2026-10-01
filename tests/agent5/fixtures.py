@@ -76,7 +76,7 @@ end
 
 def minimal_agent2_model_dict(antimony_text: str, **overrides) -> dict:
     base = {
-        "contract_version": "agent2-agent4-to-agent5-v1",
+        "contract_version": "agent2-downstream-v1",
         "model_id": "test-model-1",
         "network_id": "test-network-1",
         "antimony_text": antimony_text,

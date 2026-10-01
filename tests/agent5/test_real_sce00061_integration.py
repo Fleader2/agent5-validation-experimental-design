@@ -18,13 +18,32 @@ from app.agent5.types import (
     ValidationRequest,
     ValidationStatus,
 )
+from app.agent5.version import AGENT5_HANDOFF_CONTRACT_VERSION
 from tests.agent5.fixtures import load_real_sce00061_handoff
 
 
 def test_real_handoff_parses():
+    # Counts reflect Agent 2's own canonical run_agent2_pipeline entrypoint (Five-Agent
+    # Workflow V1 Hardening increment) -- richer than the pre-hardening partial-pipeline
+    # artifact (109 parameters), since the canonical chain now also exercises reaction-context
+    # resolution and enzyme-concentration/enzyme-state-dynamics resolution.
     handoff = parse_agent5_handoff(load_real_sce00061_handoff())
-    assert len(handoff.agent2_model.parameters) == 109
+    assert len(handoff.agent2_model.parameters) == 115
     assert len(handoff.agent2_model.species) == 53
+
+
+def test_real_handoff_declares_the_one_canonical_contract_version():
+    """Five-Agent Workflow V1 Hardening compatibility check: the real sce00061 ``agent2_model``
+    artifact parses successfully and declares exactly the one canonical contract version this
+    repository now expects -- with no re-stamping, no alias, and no per-consumer divergence
+    from what Agents 3 and 4 also consume."""
+    data = load_real_sce00061_handoff()
+    assert (
+        data["agent2_model"]["contract_version"]
+        == AGENT5_HANDOFF_CONTRACT_VERSION
+        == "agent2-downstream-v1"
+    )
+    parse_agent5_handoff(data)  # must not raise
 
 
 def test_real_agent4_report_reflects_the_honest_no_data_state():
@@ -52,7 +71,7 @@ def test_real_workflow_test_measurement_classes_identified():
         for s in handoff.agent2_model.species
         if s.initial_amount is None and s.initial_concentration is None
     ]
-    assert len(heuristic_ids) == 88
+    assert len(heuristic_ids) == 107
     assert len(missing_ic_ids) == 53
 
 
