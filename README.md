@@ -23,7 +23,14 @@ Agent 5 does **not**:
 - fabricate a validation result when no real held-out data exists.
 
 Agent 5 consumes Agent 2's and Agent 4's output through an explicit, versioned handoff contract
-(a plain, JSON-serializable dict) — it never imports any sibling package's runtime code.
+(a plain, JSON-serializable dict) — it never imports any sibling package's runtime code. The
+Agent 2 portion of that handoff is the one canonical `agent2-downstream-v1` shape Agent 2's own
+`run_agent2_pipeline` entrypoint emits and every downstream agent consumes unchanged (Five-Agent
+Workflow V1 Hardening increment).
+
+Agent 5 completes the five-agent chain; the sibling `five-agent-integration-harness` repository
+orchestrates all five agents end to end and is the canonical Version 1 release baseline (tagged
+`v1.0.0`) — see its own `docs/00_five_agent_workflow_v1_architecture.md` for the full system map.
 
 See `docs/01_agent5_responsibility_boundary.md` through `docs/06_what_agent5_does_not_do.md`
 for full detail.
