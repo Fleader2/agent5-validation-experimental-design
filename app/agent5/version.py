@@ -25,6 +25,16 @@ identical convention on the sibling repositories.
   entirely: Agent 2's own ``antimony_symbol_map`` field (new in v2) is the one source of truth
   for resolving a handoff entity id to its real, compiled Antimony identifier. See
   ``app.agent5.handoff.Agent2Model.antimony_symbol_map``.
+
+  **Explicit Enzyme Concentration Representation increment (Agent 2):** bumped
+  ``"agent2-downstream-v2"`` -> ``"agent2-downstream-v3"``, mirroring Agent 2's own real bump.
+  Agent 2's handoff ``species[]`` gained ``source_protein_id`` (set only for an explicit
+  catalytic-enzyme species) and ``kinetic_laws[]`` gained ``rate_law_scope``
+  (``"EXPLICIT_ENZYME_CONCENTRATION"``/``"LUMPED_EFFECTIVE_RATE"``) -- both purely additive;
+  this repository's own ``app.agent5.handoff`` parses every species/kinetic-law dict via
+  ``.get(...)`` with no extra-key rejection, so the version bump alone (this repository does
+  not yet read either new field) keeps parsing correct. Consuming them for Agent 5's own
+  validation/experimental-design work is deferred to a future increment.
 * ``VALIDATION_POLICY_VERSION`` -- the version of the validation-simulation/metric/
   generalization policy (metrics computed, overfit threshold, status precedence).
 * ``EXPERIMENTAL_DESIGN_POLICY_VERSION`` -- the version of the candidate-experiment generation
@@ -35,7 +45,7 @@ identical convention on the sibling repositories.
 from __future__ import annotations
 
 AGENT5_CONTRACT_VERSION = "0.1"
-AGENT5_HANDOFF_CONTRACT_VERSION = "agent2-downstream-v2"
+AGENT5_HANDOFF_CONTRACT_VERSION = "agent2-downstream-v3"
 VALIDATION_POLICY_VERSION = "validation-v1"
 EXPERIMENTAL_DESIGN_POLICY_VERSION = "experimental-design-v1"
 

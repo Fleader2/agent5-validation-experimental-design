@@ -25,7 +25,7 @@ from tests.agent5.fixtures import load_real_sce00061_handoff
 def test_real_handoff_parses():
     # Human-Readable Antimony Naming and Provenance Separation increment: this fixture was
     # regenerated from a fresh, real run of the same live organism (to pick up the new
-    # antimony_symbol_map/agent2-downstream-v2 fields); the underlying curated data had
+    # antimony_symbol_map/agent2-downstream-v3 fields); the underlying curated data had
     # itself genuinely drifted since this fixture was last captured (unrelated curation work
     # between then and now, already disclosed identically in the sibling agent3-simulation-
     # diagnostics/agent4-calibration-estimator repositories' own test suites) -- the
@@ -45,7 +45,7 @@ def test_real_handoff_declares_the_one_canonical_contract_version():
     assert (
         data["agent2_model"]["contract_version"]
         == AGENT5_HANDOFF_CONTRACT_VERSION
-        == "agent2-downstream-v2"
+        == "agent2-downstream-v3"
     )
     parse_agent5_handoff(data)  # must not raise
 
