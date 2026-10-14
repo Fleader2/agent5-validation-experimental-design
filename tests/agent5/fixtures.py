@@ -11,18 +11,25 @@ to pretend real biological validation happened without real held-out data.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from app.agent5.handoff import parse_agent5_handoff
 from app.agent5.loader import load_antimony_model
 
+_INVALID_CHAR = re.compile(r"[^A-Za-z0-9_]")
+
+
+def _sanitize(raw: str) -> str:
+    return _INVALID_CHAR.sub("_", raw)
+
+
 ONE_PARAMETER_TRUE_K = 0.7
 
 #: A single first-order decay: dS1/dt = -k1*S1. Reaction id sanitized to match Agent 2's own
 #: Antimony naming convention (``J_<reaction_id>``), exactly as Agent 3/Agent 4's own fixtures
-#: do -- confirmed necessary this session (a bare ``J1`` reaction name does not match the
-#: candidate id ``app.agent5.antimony_ids`` derives from the Agent 2 entity id
-#: ``"reaction-1"``).
+#: do -- ``minimal_agent2_model_dict``'s own ``antimony_symbol_map`` below resolves these
+#: fixtures' targets exactly as the real sce00061 integration does, never bypassing it.
 ONE_PARAMETER_ANTIMONY = f"""
 model decay
   compartment C = 1
@@ -76,7 +83,7 @@ end
 
 def minimal_agent2_model_dict(antimony_text: str, **overrides) -> dict:
     base = {
-        "contract_version": "agent2-downstream-v1",
+        "contract_version": "agent2-downstream-v2",
         "model_id": "test-model-1",
         "network_id": "test-network-1",
         "antimony_text": antimony_text,
@@ -148,6 +155,18 @@ def minimal_agent2_model_dict(antimony_text: str, **overrides) -> dict:
         "model_assumptions": [],
     }
     base.update(overrides)
+    base.setdefault(
+        "antimony_symbol_map",
+        {
+            "species": {s["species_id"]: f"s_{s['species_id']}" for s in base["species"]},
+            "reactions": {
+                r["reaction_id"]: f"J_{_sanitize(r['reaction_id'])}" for r in base["reactions"]
+            },
+            "parameters": {
+                p["parameter_id"]: f"p_{p['parameter_id']}" for p in base["parameters"]
+            },
+        },
+    )
     return base
 
 

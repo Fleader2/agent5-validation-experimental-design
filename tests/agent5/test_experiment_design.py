@@ -141,9 +141,8 @@ def _two_parameter_handoff(only_measure_s1: bool):
 def test_sensitivity_vector_matches_analytic_decay_derivative():
     handoff = parsed_handoff(minimal_agent2_model_dict(ONE_PARAMETER_ANTIMONY))
     bounds = uncertain_target_bounds(handoff.agent4_report)
-    from app.agent5.antimony_ids import build_species_antimony_id_map
 
-    species_id_map = build_species_antimony_id_map(["S1"])
+    species_id_map = {"s_S1": "S1"}
     vec = sensitivity_vector(
         handoff.agent2_model,
         {"k1": ONE_PARAMETER_TRUE_K},

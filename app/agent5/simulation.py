@@ -19,7 +19,6 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from app.agent5.antimony_ids import candidate_parameter_antimony_id, candidate_species_antimony_id
 from app.agent5.loader import load_antimony_model
 
 #: Dense, fixed-resolution simulation grid used for every evaluation -- identical rationale to
@@ -47,20 +46,29 @@ class CalibratedSimulationOutcome:
     final_state: dict[str, float] | None = None
 
 
-def _resolve_and_apply(rr, overrides: dict[str, float]) -> str | None:
+def _resolve_and_apply(
+    rr,
+    overrides: dict[str, float],
+    *,
+    parameter_symbol_map: dict[str, str],
+    species_symbol_map: dict[str, str],
+) -> str | None:
+    """Resolve each override key via Agent 2's own ``antimony_symbol_map`` (Human-Readable
+    Antimony Naming and Provenance Separation increment) -- never a locally re-derived
+    candidate identifier."""
     real_parameter_ids = set(rr.model.getGlobalParameterIds())
     real_species_ids = set(rr.model.getFloatingSpeciesIds())
     for entity_id, value in overrides.items():
-        param_candidate = candidate_parameter_antimony_id(entity_id)
-        species_candidate = candidate_species_antimony_id(entity_id)
-        if param_candidate in real_parameter_ids:
+        param_candidate = parameter_symbol_map.get(entity_id)
+        species_candidate = species_symbol_map.get(entity_id)
+        if param_candidate is not None and param_candidate in real_parameter_ids:
             rr[param_candidate] = value
-        elif species_candidate in real_species_ids:
+        elif species_candidate is not None and species_candidate in real_species_ids:
             rr[species_candidate] = value
         else:
             return (
                 f"Could not resolve override target {entity_id!r} against the loaded model "
-                f"(tried parameter id {param_candidate!r} and species id "
+                f"(tried parameter symbol {param_candidate!r} and species symbol "
                 f"{species_candidate!r})."
             )
     return None
@@ -73,11 +81,18 @@ def simulate_calibrated_model(
     *,
     species_id_map: dict[str, str] | None = None,
     reaction_id_map: dict[str, str] | None = None,
+    parameter_symbol_map: dict[str, str] | None = None,
+    species_symbol_map: dict[str, str] | None = None,
     include_reaction_fluxes: bool = False,
 ) -> CalibratedSimulationOutcome:
     """Load a fresh model, apply ``overrides`` (typically every ``ParameterEstimate.fitted_
     value`` from Agent 4, possibly with one target nudged for a sensitivity finite-difference
-    step), and simulate it, reporting trajectories at exactly ``time_points_needed``."""
+    step), and simulate it, reporting trajectories at exactly ``time_points_needed``.
+
+    ``parameter_symbol_map``/``species_symbol_map`` (``{agent2_entity_id: antimony_symbol}``,
+    typically ``agent2_model.antimony_symbol_map.parameters``/``.species`` directly) resolve
+    each ``overrides`` key to the real, compiled Antimony identifier to set.
+    """
     load_result = load_antimony_model(antimony_text)
     if not load_result.succeeded or load_result.roadrunner_instance is None:
         return CalibratedSimulationOutcome(succeeded=False, message=load_result.message)
@@ -86,7 +101,12 @@ def simulate_calibrated_model(
     species_id_map = species_id_map or {}
     reaction_id_map = reaction_id_map or {}
 
-    resolution_error = _resolve_and_apply(rr, overrides)
+    resolution_error = _resolve_and_apply(
+        rr,
+        overrides,
+        parameter_symbol_map=parameter_symbol_map or {},
+        species_symbol_map=species_symbol_map or {},
+    )
     if resolution_error is not None:
         return CalibratedSimulationOutcome(succeeded=False, message=resolution_error)
 

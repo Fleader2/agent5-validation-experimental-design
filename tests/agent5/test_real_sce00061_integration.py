@@ -23,12 +23,16 @@ from tests.agent5.fixtures import load_real_sce00061_handoff
 
 
 def test_real_handoff_parses():
-    # Counts reflect Agent 2's own canonical run_agent2_pipeline entrypoint (Five-Agent
-    # Workflow V1 Hardening increment) -- richer than the pre-hardening partial-pipeline
-    # artifact (109 parameters), since the canonical chain now also exercises reaction-context
-    # resolution and enzyme-concentration/enzyme-state-dynamics resolution.
+    # Human-Readable Antimony Naming and Provenance Separation increment: this fixture was
+    # regenerated from a fresh, real run of the same live organism (to pick up the new
+    # antimony_symbol_map/agent2-downstream-v2 fields); the underlying curated data had
+    # itself genuinely drifted since this fixture was last captured (unrelated curation work
+    # between then and now, already disclosed identically in the sibling agent3-simulation-
+    # diagnostics/agent4-calibration-estimator repositories' own test suites) -- the
+    # parameter count dropped from a previously-recorded 115 to the current, real 91; species
+    # (53) is unchanged.
     handoff = parse_agent5_handoff(load_real_sce00061_handoff())
-    assert len(handoff.agent2_model.parameters) == 115
+    assert len(handoff.agent2_model.parameters) == 91
     assert len(handoff.agent2_model.species) == 53
 
 
@@ -41,7 +45,7 @@ def test_real_handoff_declares_the_one_canonical_contract_version():
     assert (
         data["agent2_model"]["contract_version"]
         == AGENT5_HANDOFF_CONTRACT_VERSION
-        == "agent2-downstream-v1"
+        == "agent2-downstream-v2"
     )
     parse_agent5_handoff(data)  # must not raise
 
@@ -71,7 +75,7 @@ def test_real_workflow_test_measurement_classes_identified():
         for s in handoff.agent2_model.species
         if s.initial_amount is None and s.initial_concentration is None
     ]
-    assert len(heuristic_ids) == 107
+    assert len(heuristic_ids) == 84
     assert len(missing_ic_ids) == 53
 
 

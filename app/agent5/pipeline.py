@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import uuid
 
-from app.agent5.antimony_ids import build_species_antimony_id_map
 from app.agent5.experiment_design import (
     DEFAULT_CANDIDATE_TIME,
     default_candidate_experiments,
@@ -26,7 +25,7 @@ from app.agent5.generalization import (
     dominant_uncertainty_parameter_ids,
     run_generalization_analysis,
 )
-from app.agent5.handoff import Agent5Handoff
+from app.agent5.handoff import Agent5Handoff, species_antimony_id_map
 from app.agent5.report import determine_full_workflow_sufficiency, determine_overall_status
 from app.agent5.simulation import is_trivial_trajectory, simulate_calibrated_model
 from app.agent5.types import Agent5Report, ValidationRequest, ValidationResult, ValidationStatus
@@ -141,9 +140,9 @@ def run_agent5_pipeline(handoff: Agent5Handoff, request: ValidationRequest) -> A
         handoff.agent2_model.antimony_text,
         original_overrides,
         (DEFAULT_CANDIDATE_TIME,),
-        species_id_map=build_species_antimony_id_map(
-            [s.species_id for s in handoff.agent2_model.species]
-        ),
+        species_id_map=species_antimony_id_map(handoff.agent2_model),
+        parameter_symbol_map=handoff.agent2_model.antimony_symbol_map.parameters,
+        species_symbol_map=handoff.agent2_model.antimony_symbol_map.species,
     )
     baseline_trivial = is_trivial_trajectory(baseline_probe)
 

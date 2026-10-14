@@ -9,20 +9,37 @@ Agent 3's, or Agent 4's Python package.
 **Five-Agent Workflow V1 Hardening increment:** `agent2_model.contract_version` was previously
 expected to be `"agent2-agent4-to-agent5-v1"` — a name this repository invented independently of
 Agent 3's `"agent2-to-agent3-v1"` and Agent 4's `"agent2-agent3-to-agent4-v1"`, even though all
-three described the identical real artifact shape. It is now `"agent2-downstream-v1"`
+three described the identical real artifact shape. It became `"agent2-downstream-v1"`
 (`AGENT5_HANDOFF_CONTRACT_VERSION`), the one canonical name Agent 2's own
 `AGENT2_DOWNSTREAM_CONTRACT_VERSION` emits and Agents 3, 4, and 5 all consume unchanged. The
-`agent2_model` shape itself is unchanged by this rename; `agent4_report`'s own shape and the
-overall two-key wrapping are also unchanged.
+`agent2_model` shape itself was unchanged by that rename; `agent4_report`'s own shape and the
+overall two-key wrapping were also unchanged.
+
+**Human-Readable Antimony Naming and Provenance Separation increment:** bumped again,
+`"agent2-downstream-v1"` → `"agent2-downstream-v2"`, adding `agent2_model.antimony_symbol_map`
+(see the sibling Agent 3 repository's own contract doc for the full field description —
+`agent2_model` stays field-for-field identical to Agents 3 and 4's own shape). Agent 2's
+generated Antimony symbols now prefer a curated biological name over a bare id, which this
+repository's own former `app.agent5.antimony_ids` module — an independent re-implementation of
+Agent 2's *old* id-only naming rule, the only one of the three sibling re-implementations that
+also covered *reactions* (`candidate_reaction_antimony_id`, for `REACTION_FLUX` candidate
+experiments) — could no longer resolve correctly. That module is removed entirely:
+`app.agent5.simulation.simulate_calibrated_model` now takes `parameter_symbol_map`/
+`species_symbol_map` arguments (`agent2_model.antimony_symbol_map.parameters`/`.species`
+directly) instead of locally re-deriving a candidate identifier, and
+`app.agent5.handoff.species_antimony_id_map`/`reaction_antimony_id_map` replace
+`app.agent5.antimony_ids.build_species_antimony_id_map`/`build_reaction_antimony_id_map` for
+building the reverse (symbol → id) maps trajectories/fluxes are relabeled with.
 
 ## `agent2_model`
 
 Identical shape to the sibling Agent 4 repository's own `agent2_model` (see `agent4-
 calibration-estimator/docs/02_agent2_agent3_to_agent4_contract.md` for the full field table):
 `contract_version`, `model_id`, `network_id`, `antimony_text`, `antimony_generator_version`,
-`readiness`, `unresolved_reaction_ids`/`unresolved_kinetic_law_ids`, `compartments[]`,
-`species[]` (including `initialization_source`), `reactions[]`, `kinetic_laws[]`,
-`parameters[]` (including `lower_bound`/`upper_bound`/`fixed`), `model_assumptions[]`.
+`antimony_symbol_map`, `readiness`, `unresolved_reaction_ids`/`unresolved_kinetic_law_ids`,
+`compartments[]`, `species[]` (including `initialization_source`), `reactions[]`,
+`kinetic_laws[]`, `parameters[]` (including `lower_bound`/`upper_bound`/`fixed`),
+`model_assumptions[]`.
 
 Agent 5 needs the full structural contract (not just Agent 4's fitted values) because it must:
 simulate the model at all (needs `antimony_text`); identify species with a missing initial

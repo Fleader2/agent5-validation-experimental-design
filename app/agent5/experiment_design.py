@@ -13,8 +13,12 @@ from __future__ import annotations
 
 import numpy as np
 
-from app.agent5.antimony_ids import build_reaction_antimony_id_map, build_species_antimony_id_map
-from app.agent5.handoff import Agent2Model, Agent4ReportView
+from app.agent5.handoff import (
+    Agent2Model,
+    Agent4ReportView,
+    reaction_antimony_id_map,
+    species_antimony_id_map,
+)
 from app.agent5.simulation import simulate_calibrated_model
 from app.agent5.types import (
     CandidateExperiment,
@@ -93,6 +97,8 @@ def _predict(
         (time_point,),
         species_id_map=species_id_map,
         reaction_id_map=reaction_id_map,
+        parameter_symbol_map=agent2_model.antimony_symbol_map.parameters,
+        species_symbol_map=agent2_model.antimony_symbol_map.species,
         include_reaction_fluxes=(observable_kind == "REACTION"),
     )
     if not outcome.succeeded:
@@ -294,7 +300,7 @@ def reference_information(
     the existing data barely touches is weighted heavily; one it already constrains well is
     weighted lightly)."""
     overrides = calibrated_overrides(agent4_report)
-    species_id_map = build_species_antimony_id_map([s.species_id for s in agent2_model.species])
+    species_id_map = species_antimony_id_map(agent2_model)
     totals = dict.fromkeys(target_ids, 0.0)
     for obs in validation_observations.observations:
         for time_point in obs.time_points or (0.0,):
@@ -355,10 +361,8 @@ def score_candidates(
     scores broken by ``experiment_id``)."""
     target_ids = list(bounds.keys())
     overrides = calibrated_overrides(agent4_report)
-    species_id_map = build_species_antimony_id_map([s.species_id for s in agent2_model.species])
-    reaction_id_map = build_reaction_antimony_id_map(
-        [r.reaction_id for r in agent2_model.reactions]
-    )
+    species_id_map = species_antimony_id_map(agent2_model)
+    reaction_id_map = reaction_antimony_id_map(agent2_model)
     weights = {tid: _target_weight(tid, dominant_ids, reference_info) for tid in target_ids}
 
     scored: list[tuple[float, ExperimentScore]] = []

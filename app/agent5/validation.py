@@ -12,8 +12,7 @@ import uuid
 
 import numpy as np
 
-from app.agent5.antimony_ids import build_species_antimony_id_map
-from app.agent5.handoff import Agent2Model, Agent4ReportView
+from app.agent5.handoff import Agent2Model, Agent4ReportView, species_antimony_id_map
 from app.agent5.simulation import simulate_calibrated_model
 from app.agent5.types import (
     ValidationMetric,
@@ -110,12 +109,17 @@ def run_validation(
     compared against Agent 4's own already-reported training performance."""
     validation_run_id = f"agent5-validation-{uuid.uuid4()}"
     overrides = calibrated_overrides(agent4_report)
-    species_id_map = build_species_antimony_id_map([s.species_id for s in agent2_model.species])
+    species_id_map = species_antimony_id_map(agent2_model)
 
     observations = validation_observations.observations
     union_times = _union_time_points(observations)
     outcome = simulate_calibrated_model(
-        agent2_model.antimony_text, overrides, union_times, species_id_map=species_id_map
+        agent2_model.antimony_text,
+        overrides,
+        union_times,
+        species_id_map=species_id_map,
+        parameter_symbol_map=agent2_model.antimony_symbol_map.parameters,
+        species_symbol_map=agent2_model.antimony_symbol_map.species,
     )
     if not outcome.succeeded:
         return ValidationResult(
